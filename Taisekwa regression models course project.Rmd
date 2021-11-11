@@ -1,0 +1,109 @@
+---
+title: "Regression models course project"
+author: "Taisekwa Chikazhe"
+date: "11 November 2021"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Executive summarry
+
+Motor Trend, an automobile trend magazine is interested in exploring the relationship between a set of variables and miles per gallon (MPG) outcome. In this project, we will analyze the mtcars dataset from the 1974 Motor Trend US magazine to answer the following questions:
+
+Is an automatic or manual transmission better for miles per gallon (MPG)?
+How different is the MPG between automatic and manual transmissions?
+Using simple linear regression analysis, we determine that there is a signficant difference between the mean MPG for automatic and manual transmission cars. Manual transmissions achieve a higher value of MPG compared to automatic transmission. This increase is approximately 2.1 MPG when switching from an automatic transmission to a manual one, with the weight, horsepower and discplacement held constant.
+
+## Loading neccessary libraries and datasets
+```{r}
+library(ggplot2)
+library(datasets)
+data(mtcars)
+```
+## Exploratory data analysis.
+
+```{r}
+str(mtcars)
+```
+
+
+```{r}
+summary(mtcars)
+```
+
+```{r}
+head(mtcars)
+```
+```{r}
+#code some variables as factors.
+mtcars$cyl <- factor(mtcars$cyl)
+mtcars$vs <- factor(mtcars$vs, labels = c("V-Shaped", "Straight"))
+mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+```
+## Regression analysis
+Automatic vs manual transmission.
+Null Hypothesis: Transmission type has no statistically significant effect on MPG
+Alternative Hypothesis: Transmission type does have a statistically significant effect on MPG
+```{r}
+t.test(mtcars$mpg ~ mtcars$am, conf.level = 0.95)
+```
+## Interpretation:
+
+From the t-test output p-value < 0.05, so we reject the Null Hypothesis and conclude that there is an effect from transmission type. The automatic cars have a lower MPG than manual cars. To account for the other variables, we need to run a regression analysis and analyize the covariate parameters.
+
+## creating the linear model
+```{r}
+model1 <- lm(data = mtcars, mpg ~ .)
+summary(model1)
+```
+None of the variables are statistically significant at a p-value of 5%.
+The next step we Use the step function to fit the model, by adding and dropping variables to find the best fit.
+```{r}
+model2 <- step(model1, trace = 0)
+summary(model2)
+```
+
+The model identify three variables as having statistically significant effects on MPG:
+
+wt ~ Weight (in 1000 lbs)
+qsec ~ Acceleration speed (1/4 mile time)
+am ~ Transmission Type (1 = Manual, 0 = Automatic)
+
+## Conclusion
+On average an automatic transmission travels 2.0358 MPG less compared to a manual transmission , holding all other variables constant.  However an increase in weight by 1000lbs, for example, would cause a net decrease in MPG, despite the change to manual transmission and accelaeration speed will also have an impact on MPG.
+
+## Appendix plots
+## Appendix 1 pairwise variable plot 
+```{r}
+pairs(mpg ~ ., data = mtcars, main = "Pairwise Variable Plot")
+```
+
+## Appendix 2, effects of transmission type on mPG.
+
+```{r}
+plot2 <- ggplot(mtcars, aes(x = factor(am), y = mpg, fill = factor(am)))
+plot2 + geom_boxplot() + xlab("Transmission Type") + ylab("Miles Per Gallon of Gasoline (MPG)") + ggtitle("MPG by Transmission Type")
+```
+
+## Apendix 3, residuals of model 1
+
+```{r}
+par(mfrow = c(2,2))
+plot(model1)
+```
+
+## Appendix 4, residuals of model 2
+
+```{r}
+par(mfrow = c(2,2))
+plot(model2)
+```
+
